@@ -1,1 +1,43 @@
-import pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import IsolationForest\nfrom sklearn.cluster import DBSCAN\nfrom scipy.optimize import linprog\n\n# Function for basic data analysis\ndef data_analysis(data):\n    print("Descriptive Statistics:", data.describe())\n    data.hist()\n\n# Function for anomaly detection using Isolation Forest\ndef detect_anomalies(data):\n    model = IsolationForest()\n    model.fit(data)\n    anomalies = model.predict(data)\n    return anomalies\n\n# Function for clustering using DBSCAN\ndef cluster_data(data):\n    model = DBSCAN()\n    clusters = model.fit_predict(data)\n    return clusters\n\n# Function for linear optimization\ndef optimize_linear(c, A, b):\n    res = linprog(c, A_ub=A, b_ub=b)\n    return res.optimal_value, res.x\n\n# Example usage of the functions\nif __name__ == '__main__':\n    # Sample data\n    data = pd.DataFrame(np.random.randn(100, 5), columns=list('ABCDE'))\n    data_analysis(data)\n    anomalies = detect_anomalies(data)\n    print("Anomalies detected:", anomalies)\n    clusters = cluster_data(data)\n    print("Cluster labels:", clusters)\n    c = [1, 2]  # Coefficients for optimization\n    A = [[-1, -1], [1, 2], [1, -1]]  # Inequality constraints\n    b = [-1, 3, 1]\n    optimal_value, solution = optimize_linear(c, A, b)\n    print("Optimal value:", optimal_value, "at solution:", solution)\n
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.cluster import DBSCAN
+from scipy.optimize import linprog
+
+# Function for basic data analysis
+def data_analysis(data):
+    print("Descriptive Statistics:", data.describe())
+    data.hist()
+
+# Function for anomaly detection using Isolation Forest
+def detect_anomalies(data):
+    model = IsolationForest()
+    model.fit(data)
+    anomalies = model.predict(data)
+    return anomalies
+
+# Function for clustering using DBSCAN
+def cluster_data(data):
+    model = DBSCAN()
+    clusters = model.fit_predict(data)
+    return clusters
+
+# Function for linear optimization
+def optimize_linear(c, A, b):
+    res = linprog(c, A_ub=A, b_ub=b)
+    return res.optimal_value, res.x
+
+# Example usage of the functions
+if __name__ == '__main__':
+    # Sample data
+    data = pd.DataFrame(np.random.randn(100, 5), columns=list('ABCDE'))
+    data_analysis(data)
+    anomalies = detect_anomalies(data)
+    print("Anomalies detected:", anomalies)
+    clusters = cluster_data(data)
+    print("Cluster labels:", clusters)
+    c = [1, 2]  # Coefficients for optimization
+    A = [[-1, -1], [1, 2], [1, -1]]  # Inequality constraints
+    b = [-1, 3, 1]
+    optimal_value, solution = optimize_linear(c, A, b)
+    print("Optimal value:", optimal_value, "at solution:", solution)
