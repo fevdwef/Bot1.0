@@ -4,6 +4,9 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 import speech_recognition as sr
+import cv2
+import os
+from datetime import datetime
 
 # Initialize neural network model
 model = keras.Sequential([
@@ -50,6 +53,36 @@ def get_voice_input(prompt):
             print("Could not request results from the speech recognition service.")
             return None
 
+# Video generation function
+def generate_video(output_filename, duration_seconds, fps=30):
+    """Generate a video file with timestamps"""
+    width, height = 640, 480
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_filename, fourcc, fps, (width, height))
+    
+    total_frames = int(duration_seconds * fps)
+    print(f"Generating video: {output_filename}")
+    
+    for frame_num in range(total_frames):
+        # Create a frame with background
+        frame = np.zeros((height, width, 3), dtype=np.uint8)
+        frame[:] = (100, 100, 100)  # Gray background
+        
+        # Add timestamp text
+        timestamp = frame_num / fps
+        text = f"Frame: {frame_num} | Time: {timestamp:.2f}s"
+        cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(frame, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
+        out.write(frame)
+        
+        if (frame_num + 1) % (fps * 5) == 0:
+            print(f"  Progress: {frame_num + 1}/{total_frames} frames")
+    
+    out.release()
+    print(f"Video saved: {output_filename}")
+    return output_filename
+
 # Input method selection
 print("Choose input method:")
 print("1. Voice input")
@@ -87,6 +120,14 @@ if prediction > 0.5:
     print("AI suggests: Good parameters for bot activity")
 else:
     print("AI suggests: Consider adjusting parameters")
+
+# Generate video option
+generate_vid = input("\nGenerate video content? (yes/no): ").strip().lower()
+if generate_vid in ['yes', 'y']:
+    video_duration = int(input("Enter video duration in seconds: "))
+    video_filename = f"bot_video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
+    generate_video(video_filename, video_duration)
+    print(f"Video generated successfully: {video_filename}\n")
 
 print(f"Starting bot with {x} views at {duration} second intervals...\n")
 
