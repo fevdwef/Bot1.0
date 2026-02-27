@@ -3,6 +3,7 @@ import time
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
+import speech_recognition as sr
 
 # Initialize neural network model
 model = keras.Sequential([
@@ -31,9 +32,52 @@ print("Training neural network...")
 model.fit(X_train, y_train, epochs=50, verbose=0)
 print("Neural network trained!")
 
-url = input("url: ")
-duration = int(input(" Time space: "))
-x = int(input(" how many views: "))
+# Voice recognition setup
+def get_voice_input(prompt):
+    """Capture voice input from user"""
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print(prompt)
+        try:
+            audio = recognizer.listen(source, timeout=10)
+            text = recognizer.recognize_google(audio)
+            print(f"You said: {text}")
+            return text
+        except sr.UnknownValueError:
+            print("Sorry, I could not understand the audio. Please try again.")
+            return None
+        except sr.RequestError:
+            print("Could not request results from the speech recognition service.")
+            return None
+
+# Input method selection
+print("Choose input method:")
+print("1. Voice input")
+print("2. Text input")
+choice = input("Enter your choice (1 or 2): ").strip()
+
+if choice == "1":
+    # Voice input mode
+    print("\n--- Voice Input Mode ---")
+    url = get_voice_input("Please say the URL:")
+    while not url:
+        url = get_voice_input("Please say the URL again:")
+    
+    duration_text = get_voice_input("Please say the time interval in seconds:")
+    while not duration_text:
+        duration_text = get_voice_input("Please say the time interval again:")
+    duration = int(''.join(filter(str.isdigit, duration_text.split()[0])))
+    
+    views_text = get_voice_input("Please say how many views:")
+    while not views_text:
+        views_text = get_voice_input("Please say the number of views again:")
+    x = int(''.join(filter(str.isdigit, views_text.split()[0])))
+else:
+    # Traditional text input mode
+    print("\n--- Text Input Mode ---")
+    url = input("url: ")
+    duration = int(input(" Time space: "))
+    x = int(input(" how many views: "))
 
 # Use neural network to predict optimal behavior
 prediction = model.predict(np.array([[duration, x]]), verbose=0)[0][0]
